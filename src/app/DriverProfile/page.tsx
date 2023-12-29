@@ -46,9 +46,9 @@ export default function DriverProfile() {
   const [data, setData] = useState([]);
   const [open, setOpen] = React.useState(false);
   const [inputs, setInputs] = useState("");
-  const handleOpen = () => setOpen(true);
+  const [selectedData, setSelectedData] = useState<any>(null);
   const handleClose = () => setOpen(false);
-  const [formData, setFormDate] = useState({
+  const [formData, setFormDate] = useState<any>({
     id: "",
     clientId: "61e6d00fd9cc7102ac6464a3",
     driverNo: "",
@@ -62,6 +62,53 @@ export default function DriverProfile() {
     driverRFIDCardNumber: "",
     isAvailabl: "",
   });
+
+  const handleEdit = (id: any) => {
+    setOpen(true);
+    const filterData: any = DriverData.find((item: any) => item.id == id);
+    setSelectedData(filterData);
+  };
+
+  const [singleFormData, setSingleFormData] = useState<any>({
+    // Initial values or leave empty based on your requirement
+    id: "",
+    clientId: "61e6d00fd9cc7102ac6464a3",
+    driverNo: "",
+    driverfirstName: "",
+    driverMiddleName: "",
+    driverLastName: "",
+    driverContact: "",
+    driverIdNo: "",
+    driverAddress1: "",
+    driverAddress2: "",
+    driverRFIDCardNumber: "",
+    isAvailabl: false, // Assuming it's a boolean
+  });
+
+  useEffect(() => {
+    if (selectedData) {
+      setSingleFormData({
+        id: selectedData.id,
+        clientId: "61e6d00fd9cc7102ac6464a3",
+        driverNo: selectedData.driverNo,
+        driverfirstName: selectedData.driverfirstName,
+        driverMiddleName: selectedData.driverMiddleName,
+        driverLastName: selectedData.driverLastName,
+        driverContact: selectedData.driverContact,
+        driverIdNo: selectedData.driverIdNo,
+        driverAddress1: selectedData.driverAddress1,
+        driverAddress2: selectedData.driverAddress2,
+        driverRFIDCardNumber: selectedData.driverRFIDCardNumber,
+        isAvailabl: selectedData.isAvailable,
+      });
+    }
+  }, [selectedData]);
+
+  // Rest of your component code...
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
   // const lastIndex = rowsPerPages * currentPage;
   // const firstIndex = currentPage * rowsPerPages + rowsPerPages;
@@ -82,6 +129,128 @@ export default function DriverProfile() {
 
   const handleChangeDriver = (key: any, e: any) => {
     setFormDate({ ...formData, [key]: e.target.value });
+  };
+  const handleEditDriver = (key: any, e: any) => {
+    setSelectedData({ ...singleFormData, [key]: e.target.value });
+  };
+
+  // const handleDriverEditedSubmit = async (e: any) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     if (session) {
+  //       const newformdata = {
+  //         ...singleFormData,
+  //         clientId: session?.clientId,
+  //       };
+  //       console.log("new", newformdata);
+
+  //       const response = await toast.promise(
+  //         postDriverDataByClientId({
+  //           token: session?.accessToken,
+  //           newformdata: newformdata,
+  //         }),
+  //         {
+  //           loading: "Saving data...",
+  //           success: "Data saved successfully!",
+  //           error: "Error saving data. Please try again.",
+  //         },
+  //         {
+  //           style: {
+  //             border: "1px solid #00B56C",
+  //             padding: "16px",
+  //             color: "#1A202C",
+  //           },
+  //           success: {
+  //             duration: 2000,
+  //             iconTheme: {
+  //               primary: "#00B56C",
+  //               secondary: "#FFFAEE",
+  //             },
+  //           },
+  //           error: {
+  //             duration: 2000,
+  //             iconTheme: {
+  //               primary: "#00B56C",
+  //               secondary: "#FFFAEE",
+  //             },
+  //           },
+  //         }
+  //       );
+  //       console.log("response", response);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching zone data:", error);
+  //   }
+  //   console.log("data", data);
+  //   setDriverData(DriverData);
+  //   setOpen(false);
+  // };
+
+  const id: any = selectedData?._id;
+
+  const handleDriverEditedSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log(selectedData);
+    const payLoad: any = {
+      id: selectedData.id,
+      driverNo: selectedData.driverNo,
+      driverfirstName: selectedData.driverfirstName,
+      driverMiddleName: selectedData.driverMiddleName,
+      driverLastName: selectedData.driverLastName,
+      driverContact: selectedData.driverContact,
+      driverIdNo: selectedData.driverIdNo,
+      driverAddress1: selectedData.driverAddress1,
+      driverAddress2: selectedData.driverAddress2,
+      driverRFIDCardNumber: selectedData.driverRFIDCardNumber,
+      isAvailabl: selectedData.isAvailable,
+    };
+
+    try {
+      if (session) {
+        const newformdata = {
+          ...payLoad,
+          clientId: session?.clientId,
+        };
+
+        const response = await toast.promise(
+          postDriverDataByClientId({
+            token: session?.accessToken,
+            newformdata: newformdata,
+          }),
+          {
+            loading: "Saving data...",
+            success: "Data saved successfully!",
+            error: "Error saving data. Please try again.",
+          },
+          {
+            style: {
+              border: "1px solid #00B56C",
+              padding: "16px",
+              color: "#1A202C",
+            },
+            success: {
+              duration: 2000,
+              iconTheme: {
+                primary: "#00B56C",
+                secondary: "#FFFAEE",
+              },
+            },
+            error: {
+              duration: 2000,
+              iconTheme: {
+                primary: "#00B56C",
+                secondary: "#FFFAEE",
+              },
+            },
+          }
+        );
+        vehicleListData();
+      }
+    } catch (error) {
+      console.error("Error fetching zone data:", error);
+    }
+    setOpen(false);
   };
 
   const handleDriverSubmit = async (e: any) => {
@@ -129,22 +298,21 @@ export default function DriverProfile() {
     }
   };
 
-  useEffect(() => {
-    const vehicleListData = async () => {
-      try {
-        // setLaoding(true);
-        if (session) {
-          const response = await GetDriverDataByClientId({
-            token: session?.accessToken,
-            clientId: session?.clientId,
-          });
-          setDriverData(response);
-        }
-        // setLaoding(false);
-      } catch (error) {
-        console.error("Error fetching zone data:", error);
+  const vehicleListData = async () => {
+    try {
+      if (session) {
+        const response = await GetDriverDataByClientId({
+          token: session?.accessToken,
+          clientId: session?.clientId,
+        });
+        setDriverData(response);
       }
-    };
+      // setLaoding(false);
+    } catch (error) {
+      console.error("Error fetching zone data:", error);
+    }
+  };
+  useEffect(() => {
     vehicleListData();
   }, [session]);
 
@@ -452,6 +620,214 @@ export default function DriverProfile() {
             </Box>
           </Fade>
         </Modal>
+
+        <Modal
+          aria-labelledby="transition-modal-title"
+          aria-describedby="transition-modal-description"
+          open={open}
+          onClose={handleClose}
+          closeAfterTransition
+          slots={{ backdrop: Backdrop }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+            },
+          }}
+        >
+          <Fade in={open}>
+            <Box sx={style}>
+              <Typography
+                id="transition-modal-title"
+                variant="h6"
+                component="h2"
+                className="text-black"
+              >
+                <div className="grid grid-cols-12 bg-green">
+                  <div className="col-span-11">
+                    <p className="  p-3 text-white w-full ">Add Driver</p>
+                  </div>
+                  <div className="col-span-1">
+                    <svg
+                      className="h-6 w-6 text-labelColor mt-3"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                      stroke="currentColor"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      {" "}
+                      <path stroke="none" d="M0 0h24v24H0z" />{" "}
+                      <line x1="18" y1="6" x2="6" y2="18" />{" "}
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </div>
+                </div>
+              </Typography>
+              <form onSubmit={handleDriverEditedSubmit}>
+                <Typography id="transition-modal-description" sx={{ mt: 2 }}>
+                  <div
+                    className="grid grid-cols-12 m-6 mt-8 gap-8 "
+                    style={{ display: "flex", justifyContent: "center" }}
+                  >
+                    <div className="lg:col-span-3 col-span-1 ">
+                      <label className="text-sm text-labelColor">
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        value={singleFormData.driverfirstName}
+                        className="border border-grayLight  outline-green hover:border-green transition duration-700 ease-in-out "
+                        onChange={(e: any) =>
+                          handleEditDriver("driverfirstName", e)
+                        }
+                      />
+                    </div>
+                    <div className="lg:col-span-3 col-span-1 ">
+                      <label className="text-sm text-labelColor">
+                        Middle Name
+                      </label>
+                      <input
+                        type="text"
+                        value={singleFormData.driverMiddleName}
+                        className="border border-grayLight  outline-green hover:border-green transition duration-700 ease-in-out "
+                        onChange={(e: any) =>
+                          handleEditDriver("driverMiddleName", e)
+                        }
+                      />
+                    </div>
+                    <div className="lg:col-span-3 col-span-1 ">
+                      <label className="text-sm text-labelColor">
+                        <span className="text-red">*</span> Last Name
+                      </label>
+                      <input
+                        type="text"
+                        value={singleFormData.driverLastName}
+                        className="border border-grayLight  outline-green hover:border-green transition duration-700 ease-in-out "
+                        onChange={(e: any) =>
+                          handleEditDriver("driverLastName", e)
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div
+                    className="grid grid-cols-12 m-6 mt-8 gap-8 "
+                    style={{ display: "flex", justifyContent: "center" }}
+                  >
+                    <div className="lg:col-span-3 col-span-1 ">
+                      <label className="text-sm text-labelColor">
+                        Driver Number
+                      </label>
+                      <input
+                        value={singleFormData.driverNo}
+                        type="text"
+                        className="border border-grayLight  outline-green hover:border-green transition duration-700 ease-in-out "
+                        onChange={(e: any) => handleEditDriver("driverNo", e)}
+                      />
+                    </div>
+                    <div className="lg:col-span-3 col-span-1 ">
+                      <label className="text-sm text-labelColor">
+                        Contact Number
+                      </label>
+                      <input
+                        type="text"
+                        value={singleFormData.driverContact}
+                        className="border border-grayLight  outline-green hover:border-green transition duration-700 ease-in-out "
+                        onChange={(e: any) =>
+                          handleEditDriver("driverContact", e)
+                        }
+                      />
+                    </div>
+                    <div className="lg:col-span-3 col-span-1 ">
+                      <label className="text-sm text-labelColor">
+                        ID Number
+                      </label>
+                      <input
+                        type="text"
+                        value={singleFormData.driverIdNo}
+                        className="border border-grayLight  outline-green hover:border-green transition duration-700 ease-in-out "
+                        onChange={(e: any) => handleEditDriver("driverIdNo", e)}
+                      />
+                    </div>
+                  </div>
+
+                  <div
+                    className="grid grid-cols-12 m-6 mt-8 gap-8 "
+                    style={{ display: "flex", justifyContent: "start" }}
+                  >
+                    <div className="lg:col-span-2 col-span-1 ">
+                      <label className="text-sm text-labelColor ">
+                        RFID
+                        <input
+                          type="checkbox"
+                          onClick={() => setShowCardNumber(!showCardNumber)}
+                          style={{ accentColor: "green" }}
+                          className="border border-green  outline-green  cursor-pointer ms-4  "
+                        />
+                      </label>
+                    </div>
+                    {showCardNumber ? (
+                      <div className="lg:col-span-3 col-span-1 ">
+                        <label className="text-sm text-labelColor">
+                          Card Number
+                        </label>
+                        <br></br>
+                        <input
+                          type="text"
+                          value={singleFormData.driverRFIDCardNumber}
+                          className="border border-grayLight  outline-green hover:border-green transition duration-700 ease-in-out "
+                          onChange={(e: any) =>
+                            handleEditDriver("driverRFIDCardNumber", e)
+                          }
+                        />
+                      </div>
+                    ) : (
+                      ""
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-12 m-6 mt-8 gap-8 ">
+                    <div className="col-span-6 col-span-1 ">
+                      <label className="text-sm text-labelColor">
+                        Address 1
+                      </label>
+                      <br></br>
+                      <textarea
+                        value={singleFormData.driverAddress1}
+                        className="w-full border border-grayLight  outline-green hover:border-green transition duration-700 ease-in-out h-20 "
+                        onChange={(e: any) =>
+                          handleEditDriver("driverAddress1", e)
+                        }
+                      ></textarea>
+                      <button
+                        className="bg-green text-white px-10 mt-8 py-2 rounded-sm"
+                        type="submit"
+                      >
+                        Submit
+                      </button>
+                    </div>
+                    <div className="col-span-6 col-span-1 ">
+                      <label className="text-sm text-labelColor">
+                        Address 2
+                      </label>
+                      <br></br>
+                      <textarea
+                        value={singleFormData.driverAddress2}
+                        className="w-full border border-grayLight  outline-green hover:border-green transition duration-700 ease-in-out h-20 "
+                        onChange={(e: any) =>
+                          handleEditDriver("driverAddress2", e)
+                        }
+                      ></textarea>
+                    </div>
+                  </div>
+                </Typography>
+              </form>
+            </Box>
+          </Fade>
+        </Modal>
         <TableContainer component={Paper}>
           <Table aria-label="custom pagination table">
             <TableHead>
@@ -538,7 +914,10 @@ export default function DriverProfile() {
                       {row.isAvailable === true ? "Available" : "Not Available"}
                     </TableCell>
                     <TableCell align="center" colSpan={2}>
-                      <button className="text-green hover:border-green border-b border-bgLight">
+                      <button
+                        className="text-green hover:border-green border-b border-bgLight"
+                        onClick={() => handleEdit(row.id)}
+                      >
                         Edit
                       </button>{" "}
                       &nbsp;&nbsp;{" "}

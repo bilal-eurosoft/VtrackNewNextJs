@@ -15,6 +15,16 @@ import dynamic from "next/dynamic";
 import moment from "moment";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
+import Image from "next/image";
+import harshIcon from "../../../public/Images/HarshBreak.png";
+import Speedometer, {
+  Background,
+  Arc,
+  Needle,
+  Progress,
+  Marks,
+  Indicator,
+} from "react-speedometer";
 import {
   TravelHistoryByBucketV2,
   TripsByBucketAndVehicle,
@@ -69,10 +79,10 @@ interface Option {
   label: string;
 }
 
- const MapContainer = dynamic(
+const MapContainer = dynamic(
   () => import("react-leaflet").then((module) => module.MapContainer),
   { ssr: false }
-); 
+);
 const TileLayer = dynamic(
   () => import("react-leaflet").then((module) => module.TileLayer),
   { ssr: false }
@@ -89,9 +99,6 @@ const Circle = dynamic(
   () => import("react-leaflet").then((module) => module.Circle),
   { ssr: false }
 );
-
-
-
 
 function filterWeekends(date: any) {
   // Return false if Saturday or Sunday
@@ -1040,7 +1047,62 @@ export default function journeyReplayComp() {
               </button>
             )}
           </div>
-          <div className="col-span-1"></div>
+          <div className="col-span-3 "> </div>
+          {TravelHistoryresponse.length > 0 && (
+            <div className="col-span-1  -mt-1">
+              <div className="grid grid-cols-12">
+                <div className="col-span-2">
+                  <Image src={harshIcon} alt="harshIcon " className="h-6" />
+                  <Image
+                    src={harshIcon}
+                    alt="harshIcon "
+                    className="h-6 mt-1"
+                  />
+                </div>
+                <div className="col-span-10 text-sm">
+                  location Start
+                  <br></br>
+                  <p className="mt-3">Location End</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="col-span-1  -mt-1">
+            {TravelHistoryresponse.filter((item: any) => {
+              return (
+                item.vehicleEvents.filter(
+                  (items: any) => items.Event == "HarshAcceleration"
+                ).length > 0
+              );
+            }).length > 0 && (
+              <div className="grid grid-cols-12">
+                <div className="col-span-2">
+                  <Image src={harshIcon} alt="harshIcon " className="h-6 " />
+                </div>
+                <div className="col-span-10 text-sm">Harsh Acceleration</div>
+              </div>
+            )}
+            {TravelHistoryresponse.filter((item: any) => {
+              return (
+                item.vehicleEvents.filter(
+                  (items: any) => items.Event == "HarshBreak"
+                ).length > 0
+              );
+            }).length > 0 && (
+              <div className="grid grid-cols-12">
+                <div className="col-span-2">
+                  <Image
+                    src={harshIcon}
+                    alt="harshIcon "
+                    className="h-6 mt-1"
+                  />
+                </div>
+                <div className="col-span-10 text-sm">
+                  <p className="mt-2">Harsh Break</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         <div className="grid lg:grid-cols-5  sm:grid-cols-5 md:grid-cols-12 sm:grid-cols-12 grid-cols-1">
           <div className="lg:col-span-1 md:col-span-3 sm:col-span-12 col-span-4 ">
@@ -1279,6 +1341,43 @@ export default function journeyReplayComp() {
                       ></Marker>
                     </div>
                   )}
+
+                  {TravelHistoryresponse.map((item) => {
+                    if (item.vehicleEvents.length > 0) {
+                      return item.vehicleEvents.map((items) => {
+                        if (items.Event === "HarshBreak") {
+                          return (
+                            <Marker
+                              position={[item.lat, item.lng]}
+                              icon={
+                                new L.Icon({
+                                  iconUrl:
+                                    "https://img.icons8.com/material-outlined/24/FA5252/brake-discs.png",
+                                  iconSize: [40, 40],
+                                  iconAnchor: [16, 37],
+                                })
+                              }
+                            ></Marker>
+                          );
+                        }
+                        if (items.Event === "HarshAcceleration") {
+                          return (
+                            <Marker
+                              position={[item.lat, item.lng]}
+                              icon={
+                                new L.Icon({
+                                  iconUrl:
+                                    "https://img.icons8.com/color/48/acceleration.png",
+                                  iconSize: [30, 30],
+                                  iconAnchor: [16, 37],
+                                })
+                              }
+                            ></Marker>
+                          );
+                        }
+                      });
+                    }
+                  })}
                 </MapContainer>
               )}
             </div>
@@ -1411,15 +1510,15 @@ export default function journeyReplayComp() {
                 position: "absolute",
                 top: "10%",
                 left: "5%",
-                right: "2%",
+                right: "1%",
                 display: "flex",
                 justifyContent: "end",
               }}
             >
-              <div className="col-span-2  lg:w-42 md:w-44 sm:w-44 w-36 rounded-md ">
+              <div className="col-span-2  lg:w-52 md:w-44 sm:w-44 w-36 rounded-md ">
                 {isPlaying || isPaused ? (
                   <div>
-                    <ReactSpeedometer
+                    {/* <ReactSpeedometer
                       width={120}
                       height={90}
                       maxValue={180}
@@ -1430,11 +1529,24 @@ export default function journeyReplayComp() {
                       endColor="blue"
                       needleTransitionDuration={100}
                       segmentColors={["#3a4848"]}
-                    />
-                    <p className="text-white text-sm px-2 py-1 mt-3 bg-bgPlatBtn rounded-md">
-                      Speed: {getSpeedAndDistance()?.speed}
-                      <br></br> Distance:{" "}
-                      {getSpeedAndDistance()?.distanceCovered}
+                    /> */}
+                    <Speedometer
+                      value={getSpeedAndDistance()?.speed.replace("Mph", "")}
+                      max={140}
+                      angle={160}
+                      fontFamily="squada-one"
+                      accentColor="#00B56C"
+                      width={200}
+                      // segmentColors="green"
+                    >
+                      <Background angle={180} />
+                      <Arc />
+                      <Needle />
+                      <Progress />
+                      <Marks />
+                    </Speedometer>
+                    <p className="text-white text-sm px-2 py-1 -mt-16 bg-bgPlatBtn rounded-md">
+                      Distance: {getSpeedAndDistance()?.distanceCovered}
                     </p>
                   </div>
                 ) : null}
@@ -1443,6 +1555,28 @@ export default function journeyReplayComp() {
                   <p className="bg-bgPlatBtn text-white mt-3 px-2 py-3 rounded-md">
                     {TripAddressData}
                   </p>
+                )}
+                {isPlaying && (
+                  <div>
+                    {/* <Speedometer
+                      value={getSpeedAndDistance()?.speed.replace("Mph", "")}
+                      max={140}
+                      angle={160}
+                      fontFamily="squada-one"
+                      accentColor="#00B56C"
+                      width={200}
+                      // segmentColors="green"
+                    >
+                      <Background angle={180} />
+                      <Arc />
+                      <Needle />
+                      <Progress />
+                      <Marks />
+                    </Speedometer>
+                    <p className="bg-bgPlatBtn text-white mt-3 px-2 py-3 rounded-md">
+                      {TripAddressData}
+                    </p> */}
+                  </div>
                 )}
               </div>
             </div>
