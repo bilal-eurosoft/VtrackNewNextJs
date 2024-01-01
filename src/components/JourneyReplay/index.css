@@ -53,3 +53,14 @@ input[type="checkbox"]:hover {
 .Mui-focused .MuiOutlinedInput-notchedOutline {
   border-color: #00b56c !important;
 }
+
+#trips_handle {
+  height: 50em;
+}
+
+@media (max-width: 450px) {
+  #trips_handle {
+    height: 12em;
+    overflow-y: scroll;
+  }
+}

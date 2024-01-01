@@ -170,7 +170,7 @@ export default function journeyReplayComp() {
   const [isDynamicTime, setIsDynamicTime] = useState<any>([]);
   const [stopVehicle, setStopVehicle] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [currentDates, setCurrentDates] = useState<any>(0);
   const SetViewOnClick = ({ coords }: { coords: any }) => {
     if (isPaused) {
       setMapcenterToFly(null);
@@ -434,7 +434,7 @@ export default function journeyReplayComp() {
 
   const formattedTime = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
   const parsedDateTime = new Date(currentTime);
-  const formattedDateTime = `${parsedDateTime
+  const formattedDateTime = `${parsedDateTime}
     .toISOString()
     .slice(0, 10)}TO${timeOnly}`;
   const handleSubmit = async (e: React.FormEvent) => {
@@ -451,21 +451,29 @@ export default function journeyReplayComp() {
         };
         const timestart: string = "00:00:00";
         const timeend: string = "23:59:59";
+        const currentDayOfWeek = new Date().getDay();
 
+        const daysUntilMonday =
+          currentDayOfWeek === currentDates ? 7 : currentDayOfWeek - 1;
+        const fromDateTime = new Date();
+        fromDateTime.setDate(fromDateTime.getDate() - daysUntilMonday);
+        const toDateTime = new Date(fromDateTime);
+        toDateTime.setDate(toDateTime.getDate() + 6);
+        const formattedFromDateTime = formatDate(fromDateTime);
+        const formattedToDateTime = formatDate(toDateTime);
         if (isCustomPeriod) {
           newdata = {
             ...newdata,
-            fromDateTime: `${Ignitionreport.fromDateTime}T${timestart}Z`,
-            toDateTime: `${Ignitionreport.toDateTime}T${timeend}Z`,
+            fromDateTime: `${formattedFromDateTime}T${timestart}Z`,
+            toDateTime: `${formattedToDateTime}T${timeend}Z`,
           };
         } else {
           newdata = {
             ...newdata,
-            fromDateTime: `${currentDate}T${timestart}Z`,
-            toDateTime: `${currentDate}T${timeend}Z`,
+            fromDateTime: `${formattedFromDateTime}T${timestart}Z`,
+            toDateTime: `${formattedToDateTime}T${timeend}Z`,
           };
         }
-
         setIgnitionreport(newdata);
 
         try {
@@ -537,6 +545,13 @@ export default function journeyReplayComp() {
     }
     setLoading(false);
   };
+
+  function formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
 
   // var stopPoints = [];
   // const result = TravelHistoryresponse.map((item) => {
@@ -810,19 +825,26 @@ export default function journeyReplayComp() {
 
   const [selectedOption, setSelectedOption] = useState<any>(null);
 
-  const handleSelectChange = (newValue: any, actionMeta: any) => {
-    const name = "period";
-    const value = "yesterday";
-    setSelectedOption(newValue);
-  };
+  // const handleSelectChange = (newValue: any, actionMeta: any) => {
+  //   const name = "period";
+  //   const value = "yesterday";
+  //   setSelectedOption(newValue);
+  // };
 
   const handleInputChange: any = (e: any) => {
+    setClearMapData(false);
     const { name, value } = e.target;
     setIgnitionreport((prevReport: any) => ({
       ...prevReport,
       [name]: value,
     }));
+    if (name === "period" && value === "week") {
+      setCurrentDates(1);
+    }
 
+    if (name === "period" && value === "today") {
+      setCurrentDates(0);
+    }
     if (name === "period" && value === "custom") {
       setIsCustomPeriod(true);
     } else if (name === "period" && value != "custom") {
@@ -859,7 +881,7 @@ export default function journeyReplayComp() {
       <div style={{ height: "90vh" }}>
         <p className="bg-[#00B56C] px-4 py-1 text-white">JourneyReplay</p>
         <div className="grid lg:grid-cols-10  md:grid-cols-4  gap-5 px-4 text-start pt-4 bg-bgLight">
-          <div className="lg:col-span-1 md:col-span-3 mt-2 ">
+          <div className="lg:col-span-1 md:col-span-3  col-span-8 mt-2 ">
             {/* <select
               id="select_box"
               className="   h-8 text-gray  w-full  outline-green border border-grayLight px-1 hover:border-green"
@@ -915,7 +937,7 @@ export default function journeyReplayComp() {
             </Select>
           </div>
 
-          <div className="lg:col-span-3 md:col-span-3  pt-2">
+          <div className="lg:col-span-3 md:col-span-3 col-span-12     pt-2">
             {getShowRadioButton ? (
               <div className="grid lg:grid-cols-12 md:grid-cols-2 sm:grid-cols-2  -mt-5  grid-cols-2  px-10 gap-5 flex justify-center ">
                 <div className="lg:col-span-5 md:col-span-1 sm:col-span-1 col-span-2 lg:mt-0 md:mt-0 sm:mt-0  ">
@@ -959,10 +981,10 @@ export default function journeyReplayComp() {
               </div>
             ) : (
               <div
-                className="grid lg:grid-cols-11 md:grid-cols-12 mt-1 "
+                className="grid lg:grid-cols-11 md:grid-cols-12 grid-cols-12 mt-1 "
                 // style={{ display: "flex", justifyContent: "start" }}
               >
-                <div className="lg:col-span-2 md:col-span-2 sm:col-span-2">
+                <div className="lg:col-span-2 md:col-span-2 sm:col-span-2 col-span-3">
                   <label className="text-sm text-gray ">
                     <input
                       type="radio"
@@ -978,11 +1000,11 @@ export default function journeyReplayComp() {
                   </label>
                 </div>
 
-                <div className="lg:col-span-2  md:col-span-2 sm:col-span-2  lg:-ms-4 ">
+                <div className="lg:col-span-2  md:col-span-2 sm:col-span-2  lg:-ms-4 col-span-3 ">
                   <label className="text-sm  text-gray w-full pt-3 ">
                     <input
                       type="radio"
-                      className="w-5  form-radio text-green"
+                      className="lg:w-5 w-3   form-radio text-green"
                       name="period"
                       disabled={loading}
                       value="yesterday"
@@ -994,7 +1016,7 @@ export default function journeyReplayComp() {
                   </label>
                 </div>
 
-                <div className="lg:col-span-2 md:col-span-2 lg:-ms-1">
+                <div className="lg:col-span-2 md:col-span-2  lg:-ms-1 col-span-3">
                   <label className="text-sm text-gray ">
                     <input
                       type="radio"
@@ -1010,8 +1032,8 @@ export default function journeyReplayComp() {
                   </label>
                 </div>
 
-                <div className="lg:col-span-2 md:col-span-2 -ms-4">
-                  <label className="text-sm text-gray ">
+                <div className="lg:col-span-2 md:col-span-2 -ms-4 col-span-3">
+                  <label className="text-sm text-gray">
                     <input
                       type="radio"
                       className="w-5 "
@@ -1030,7 +1052,7 @@ export default function journeyReplayComp() {
             )}
           </div>
 
-          <div className=" col-span-1 text-white h-16 flex justify-center items-center">
+          <div className=" lg:col-span-1 col-span-2  text-white h-16 flex justify-center items-center">
             {clearMapData ? (
               <button
                 onClick={handleClickClear}
@@ -1110,7 +1132,7 @@ export default function journeyReplayComp() {
               Trips ({dataresponse?.length})
             </p>
             <div
-              style={{ height: "44.4em" }}
+              id="trips_handle"
               className="overflow-y-scroll overflow-x-hidden bg-bgLight "
             >
               {dataresponse?.map((item: TripsByBucket, index: number) => (
@@ -1385,12 +1407,12 @@ export default function journeyReplayComp() {
             <div className="absolute lg:top-4 lg:left-20 lg:right-5 top-4 left-2 right-2 grid lg:grid-cols-10 md:grid-cols-10 sm:grid-cols-10 grid-cols-10 lg:mt-0  mt-20 ">
               <div className="lg:col-span-2 md:col-span-4 sm:col-span-3 col-span-5  ">
                 <div className="grid lg:grid-cols-12 md:grid-cols-12 sm:grid-cols-12 grid-cols-12 bg-green py-2 shadow-lg">
-                  <div className="lg:col-span-10  md:col-span-10 sm:col-span-10 col-span-10">
+                  <div className="lg:col-span-10  md:col-span-10 sm:col-span-10 col-span-11">
                     <p className="text-white px-3 text-lg">
                       Stop Details ({stops.length})
                     </p>
                   </div>
-                  <div className="col-span-1 mt-1">
+                  <div className="col-span-1 mt-1 lg:-ms-3 md:-ms-2 -ms-3">
                     {getShowICon ? (
                       <svg
                         className="h-5 w-5 text-white"
@@ -1591,7 +1613,7 @@ export default function journeyReplayComp() {
               className="absolute lg:left-56 lg:right-20 lg:bottom-0 md:bottom-8 bottom-2  left-1 right-3"
             >
               <div className="grid lg:grid-cols-7 md:grid-12 grid-cols-12 lg:gap-5 gap-2 ">
-                <div className="lg:col-span-1 md:col-span-3 col-span-3  ">
+                <div className="lg:col-span-1 md:col-span-3 col-span-4  ">
                   <div className="bg-bgPlatBtn rounded-md">
                     <p className="lg:text-xl text-white text-center font-extralight py-2 text-md mx-1">
                       <BlinkingTime timezone={session?.timezone} />
@@ -1663,7 +1685,7 @@ export default function journeyReplayComp() {
                     </div>
                   </div>
                 </div>
-                <div className="lg:col-span-4 col-span-9   ">
+                <div className="lg:col-span-4 col-span-8   ">
                   <div className="grid lg:grid-cols-12 grid-cols-12 gap-1 lg:py-5 py-2 mt-6 pt-4 lg:pt-8 rounded-md  mx-2 px-5 bg-white">
                     <div
                       className="lg:col-span-11 col-span-10"
