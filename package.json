@@ -6,7 +6,9 @@
     "dev": "next dev -p 3010",
     "build": "next  build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "force-install": "npm install --force",
+    "preinstall": "if [[ $FORCE_NPM_INSTALL == true ]]; then npm install --force; fi"
   },
   "dependencies": {
     "@date-io/core": "^1.3.6",

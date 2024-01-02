@@ -45,6 +45,8 @@ type TripsByBucket = {
   childRecords: any[]; // You can specify the type of childRecords as needed
   id: string;
   period: string;
+  fromDateTime: string;
+  toDateTime: string;
 };
 
 export default TripsByBucket;
